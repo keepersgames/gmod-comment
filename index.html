@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Comments</title>
+  <style>
+    body {
+      transition: background 0.3s, color 0.3s;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+
+    textarea {
+      width: 300px;
+      height: 80px;
+      resize: none;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+
+    #comments {
+      margin-top: 20px;
+    }
+
+    .dark-mode {
+      background: #222;
+      color: white;
+    }
+
+    .dark-mode .comment {
+      background: #333;
+      color: white;
+    }
+
+    .comment {
+      background: white;
+      padding: 10px;
+      margin: 10px auto;
+      width: 300px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Comment Website</h1>
+  <p>Your username: <strong id="usernameDisplay"></strong></p>
+  <button onclick="toggleDarkMode()" id="darkModeBtn">Dark Mode: Off</button>
+  <p>Write a comment below:</p>
+
+  <textarea id="commentInput" placeholder="Type something..."></textarea><br>
+  <button onclick="postComment()">Post Comment</button>
+
+  <div id="comments"></div>
+
+  <script>
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
+
+      let isDark = document.body.classList.contains("dark-mode");
+      document.getElementById("darkModeBtn").textContent = isDark ? "Dark Mode: On" : "Dark Mode: Off";
+
+      localStorage.setItem("darkMode", isDark);
+    }
+
+    function loadDarkMode() {
+      let darkMode = localStorage.getItem("darkMode") === "true";
+
+      if (darkMode) {
+        document.body.classList.add("dark-mode");
+        document.getElementById("darkModeBtn").textContent = "Dark Mode: On";
+      }
+    }
+
+    function getUsername() {
+      let username = localStorage.getItem("username");
+
+      if (!username) {
+        const names = ["banana", "apple", "cookie", "dragon", "pizza", "ghost", "cat"];
+        username = names[Math.floor(Math.random() * names.length)] + Math.floor(Math.random() * 90000 + 10000);
+        localStorage.setItem("username", username);
+      }
+
+      document.getElementById("usernameDisplay").textContent = username;
+      return username;
+    }
+
+    function loadComments() {
+      let savedComments = JSON.parse(localStorage.getItem("comments")) || [];
+      let commentsDiv = document.getElementById("comments");
+      let currentUser = getUsername();
+
+      commentsDiv.innerHTML = "";
+
+      savedComments.forEach((comment, index) => {
+        let commentBox = document.createElement("div");
+        commentBox.className = "comment";
+
+        let text = document.createElement("p");
+        text.innerHTML = "<strong>" + comment.user + "</strong>: " + comment.text;
+        commentBox.appendChild(text);
+
+        if (comment.user === currentUser) {
+          let deleteBtn = document.createElement("button");
+          deleteBtn.textContent = "Delete";
+          deleteBtn.onclick = function() {
+            savedComments.splice(index, 1);
+            localStorage.setItem("comments", JSON.stringify(savedComments));
+            loadComments();
+          };
+          commentBox.appendChild(deleteBtn);
+        }
+
+        commentsDiv.appendChild(commentBox);
+      });
+    }
+
+    function postComment() {
+      let input = document.getElementById("commentInput");
+      let text = input.value.trim();
+
+      if (text === "") {
+        alert("Please type a comment first!");
+        return;
+      }
+
+      let savedComments = JSON.parse(localStorage.getItem("comments")) || [];
+      let currentUser = getUsername();
+
+      savedComments.unshift({
+        user: currentUser,
+        text: text
+      });
+
+      localStorage.setItem("comments", JSON.stringify(savedComments));
+      loadComments();
+      input.value = "";
+    }
+
+    getUsername();
+    loadDarkMode();
+    loadComments();
+  </script>
+
+</body>
+</html>
